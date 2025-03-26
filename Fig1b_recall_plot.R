@@ -13,8 +13,8 @@ color_palette <- c(
   "maaslin.clr" = "#0358f1",  # Lighter Blue
   "maaslin.log" = "#70d6ff",  # Darker Blue1F5B99
   "metasplines" = "#4DAF4A",  # Green
-  "trendyspliner.clr" = "#ff6d00",  # Lighter Yellow
-  "trendyspliner.log" = "#ffd400",  # Darker Yellow
+  "spliner.clr" = "#ff6d00",  # Lighter Yellow
+  "spliner.log" = "#ffd400",  # Darker Yellow
   "wilcoxon.clr" = "#9d4edd",  # Lighter Brown
   "wilcoxon.log_relab" = "#fb6f92",  # Darker Brown
   "nbmm" = "#A65628",  # Purple
@@ -70,6 +70,9 @@ for (i in seq_along(efs_values)) {
 
 df_combined <- bind_rows(result_list)
 df_combined$M <- factor(df_combined$M, levels = c("M = 2", "M = 4", "M = 6"))
+df_combined$model_name <- gsub(".none", "", df_combined$model_name)
+df_combined <- df_combined %>% filter(!model_name %in% c('baseline', 'baseline.clr', 'baseline.log'))
+
 
 # Create the plot
 plot <- ggplot(df_combined, aes(x = sample_size, y = Mean, color = model_name, group = model_name)) +
@@ -84,5 +87,12 @@ plot <- ggplot(df_combined, aes(x = sample_size, y = Mean, color = model_name, g
   scale_color_manual(values = color_palette) + 
   labs(x = "Sample Size", y = "Mean Recall", color = "Model") +
   theme(strip.text = element_text(size = 12, face = "bold"))
+
+# Save the plot
+ggsave(
+  plot, 
+  file = "/Users/zkarwowska/Desktop/EMBL_project/zeevi_dataset_v5/recall.pdf", 
+  dpi = 300
+)
 
 print(plot)
