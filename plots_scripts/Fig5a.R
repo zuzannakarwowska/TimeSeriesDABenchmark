@@ -2,9 +2,12 @@ library(ggplot2)
 library(dplyr)
 library(readr)
 library(cowplot)
+library(ggplot2)
+library(dplyr)
 
 # Read data
 d <- '/Users/zkarwowska/new_embl_folder/zeevi_dataset_v5/results/results_for_placebo_plots/'
+
 LINDA_100 <- read_csv(paste0(d, 'LINDA_100.csv'))
 MAASLIN_100 <- read_csv(paste0(d, 'MAASLIN_100.csv'))
 ZIGMM_100 <- read_csv(paste0(d, 'ZIGMM_100.csv'))
@@ -13,35 +16,49 @@ MAASLIN_200 <- read_csv(paste0(d, 'MAASLIN_200.csv'))
 ZIGMM_200 <- read_csv(paste0(d, 'ZIGMM_200.csv'))
 
 plot_bars_with_threshold <- function(data, title = "", add_legend = FALSE) {
-  p <- ggplot(data, aes(x = factor(N))) +
-    geom_col(aes(y = ypred, fill = "Background"),
-             position = position_dodge(width = 0.8), width = 0.7, alpha = 0.7) +
-    geom_col(aes(y = tp, fill = setup),
-             position = position_dodge(width = 0.8), width = 0.7) +
+  library(ggplot2)
+  library(dplyr)
+  
+  # Prepare M column as factor
+  data <- data %>%
+    mutate(
+      M = ifelse(N == "baseline", "baseline", N),
+      M = factor(M, levels = unique(M)),  # Preserve order
+      setup = factor(setup, levels = c("baseline", "one arm", "placebo", "cross sectional"))
+    )
+  
+  dodge <- position_dodge(width = 0.8)
+  
+  ggplot(data, aes(x = M, group = setup)) +
+    # Grey background bars (no legend)
+    geom_col(aes(y = ypred), fill = "grey30", width = 0.7, alpha = 0.5, position = dodge, show.legend = FALSE) +
+    
+    # Foreground TP colored bars (legend shown)
+    geom_col(aes(y = tp, fill = setup), width = 0.7, position = dodge) +
+    
+    # Optional threshold
     geom_hline(yintercept = 40, color = "red", linetype = "dashed", linewidth = 0.5) +
-    labs(title = title, x = "", y = "") +
+    
+    labs(title = title, x = "Sample size (M)", y = "") +
     theme_minimal() +
     theme(
-      plot.title = element_text(size = 18),  # <- title size increased here
-      panel.grid.minor = element_blank(),
-      axis.text.x = element_text(size = 12),
+      plot.title = element_text(size = 18),
+      axis.text.x = element_text(size = 14),
       axis.text.y = element_text(size = 14),
       legend.position = ifelse(add_legend, "right", "none"),
       legend.title = element_text(size = 13),
       legend.text = element_text(size = 12)
     ) +
+    
     scale_fill_manual(
       name = "Setup",
       values = c(
-        "one arm" = "#1f77b4",
-        "placebo" = "#ff7f0e", 
-        "baseline" = "#2ca02c",
-        "cross sectional" = "#d62728",
-        "Background" = "grey"
-      ),
-      breaks = c("one arm", "placebo", "baseline", "cross sectional")
+        "baseline" = "#2ca02c",         # green
+        "one arm" = "#1f77b4",          # blue
+        "placebo" = "#ff7f0e",          # orange
+        "cross sectional" = "#d62728"   # red
+      )
     )
-  return(p)
 }
 
 # Create all plots (legend only on one)

@@ -10,8 +10,10 @@ grouped <- read_csv('/Users/zkarwowska/new_embl_folder/zeevi_dataset_v5/results/
 # Function to create individual plots
 plot_metric <- function(data, metric, title, show_legend = FALSE) {
   
+  linetype_mapping <- c("placebo" = "dotted", "one arm" = "solid", "baseline" = "solid")
+  
   # Set y-axis limits
-  y_limits <- if (metric == "recall") c(-0.1, 1.1) else c(0.5, 1.1)
+  y_limits <- if (metric == "recall") c(-0.1, 1.05) else c(0.7, 1.05)
   
   p <- ggplot(data, aes(x = factor(total), y = .data[[metric]], 
                         color = factor(N), linetype = setup, shape = factor(N))) +
@@ -31,7 +33,8 @@ plot_metric <- function(data, metric, title, show_legend = FALSE) {
           axis.title.y = element_text(size = 14)) +
     scale_color_discrete(name = "N") +
     scale_linetype_discrete(name = "Setup") +
-    scale_shape_discrete(name = "N")
+    scale_shape_discrete(name = "N") +
+    scale_linetype_manual(name = "Setup", values = linetype_mapping)
   
   if (!show_legend) {
     p <- p + theme(legend.position = "none")
@@ -44,7 +47,7 @@ plot_metric <- function(data, metric, title, show_legend = FALSE) {
 }
 
 # Filter data for each tool
-linda_data <- grouped %>% filter(tool == "LINDA")
+linda_data <- grouped %>% filter(tool == "LinDA")
 maaslin_data <- grouped %>% filter(tool == "MaAsLin2")
 zigmm_data <- grouped %>% filter(tool == "ZIGMM")
 
